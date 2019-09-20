@@ -8,7 +8,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-07-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
-	"github.com/openshift/openshift-azure/pkg/util/arm"
+	"github.com/openshift/openshift-azure/pkg/util/azureclient/compute/computedeployment"
+	"github.com/openshift/openshift-azure/pkg/util/azureclient/network/networkdeployment"
 	"github.com/openshift/openshift-azure/pkg/util/resourceid"
 )
 
@@ -32,8 +33,8 @@ const (
 	adminUsername  = "cloud-user"
 )
 
-func vnet(location string) *arm.VirtualNetwork {
-	return &arm.VirtualNetwork{
+func vnet(location string) *networkdeployment.VirtualNetwork {
+	return &networkdeployment.VirtualNetwork{
 		VirtualNetworkPropertiesFormat: &network.VirtualNetworkPropertiesFormat{
 			AddressSpace: &network.AddressSpace{
 				AddressPrefixes: &[]string{
@@ -55,8 +56,8 @@ func vnet(location string) *arm.VirtualNetwork {
 	}
 }
 
-func ip(resourcegroup, location, domainNameLabel string) *arm.PublicIPAddress {
-	return &arm.PublicIPAddress{
+func ip(resourcegroup, location, domainNameLabel string) *networkdeployment.PublicIPAddress {
+	return &networkdeployment.PublicIPAddress{
 		Sku: &network.PublicIPAddressSku{
 			Name: network.PublicIPAddressSkuNameBasic,
 		},
@@ -72,8 +73,8 @@ func ip(resourcegroup, location, domainNameLabel string) *arm.PublicIPAddress {
 	}
 }
 
-func nsg(location string) *arm.SecurityGroup {
-	return &arm.SecurityGroup{
+func nsg(location string) *networkdeployment.SecurityGroup {
+	return &networkdeployment.SecurityGroup{
 		SecurityGroupPropertiesFormat: &network.SecurityGroupPropertiesFormat{
 			SecurityRules: &[]network.SecurityRule{
 				{
@@ -97,8 +98,8 @@ func nsg(location string) *arm.SecurityGroup {
 	}
 }
 
-func nic(subscriptionID, resourceGroup, location string) *arm.Interface {
-	return &arm.Interface{
+func nic(subscriptionID, resourceGroup, location string) *networkdeployment.Interface {
+	return &networkdeployment.Interface{
 		InterfacePropertiesFormat: &network.InterfacePropertiesFormat{
 			NetworkSecurityGroup: &network.SecurityGroup{
 				ID: to.StringPtr(resourceid.ResourceID(
@@ -139,8 +140,8 @@ func nic(subscriptionID, resourceGroup, location string) *arm.Interface {
 	}
 }
 
-func vm(subscriptionID, resourceGroup, location, sshPublicKey string, plan *compute.Plan, imageReference *compute.ImageReference) *arm.VirtualMachine {
-	return &arm.VirtualMachine{
+func vm(subscriptionID, resourceGroup, location, sshPublicKey string, plan *compute.Plan, imageReference *compute.ImageReference) *computedeployment.VirtualMachine {
+	return &computedeployment.VirtualMachine{
 		Plan: plan,
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
 			HardwareProfile: &compute.HardwareProfile{
@@ -190,7 +191,7 @@ func vm(subscriptionID, resourceGroup, location, sshPublicKey string, plan *comp
 	}
 }
 
-func cse(location string, script []byte) (*arm.VirtualMachineExtension, error) {
+func cse(location string, script []byte) (*computedeployment.VirtualMachineExtension, error) {
 	buf := &bytes.Buffer{}
 
 	gz, err := gzip.NewWriterLevel(buf, gzip.BestCompression)
@@ -208,7 +209,7 @@ func cse(location string, script []byte) (*arm.VirtualMachineExtension, error) {
 		return nil, err
 	}
 
-	return &arm.VirtualMachineExtension{
+	return &computedeployment.VirtualMachineExtension{
 		VirtualMachineExtensionProperties: &compute.VirtualMachineExtensionProperties{
 			Publisher:               to.StringPtr("Microsoft.Azure.Extensions"),
 			Type:                    to.StringPtr("CustomScript"),

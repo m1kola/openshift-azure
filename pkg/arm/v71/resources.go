@@ -10,7 +10,9 @@ import (
 
 	"github.com/openshift/openshift-azure/pkg/api"
 	"github.com/openshift/openshift-azure/pkg/cluster/names"
-	"github.com/openshift/openshift-azure/pkg/util/arm"
+	"github.com/openshift/openshift-azure/pkg/util/azureclient/compute/computedeployment"
+	"github.com/openshift/openshift-azure/pkg/util/azureclient/network/networkdeployment"
+	"github.com/openshift/openshift-azure/pkg/util/azureclient/storage/storagedeployment"
 	"github.com/openshift/openshift-azure/pkg/util/resourceid"
 	"github.com/openshift/openshift-azure/pkg/util/template"
 	"github.com/openshift/openshift-azure/pkg/util/tls"
@@ -51,8 +53,8 @@ const (
 	vmssAdminUsername                             = "cloud-user"
 )
 
-func (g *simpleGenerator) vnet() *arm.VirtualNetwork {
-	return &arm.VirtualNetwork{
+func (g *simpleGenerator) vnet() *networkdeployment.VirtualNetwork {
+	return &networkdeployment.VirtualNetwork{
 		VirtualNetworkPropertiesFormat: &network.VirtualNetworkPropertiesFormat{
 			AddressSpace: &network.AddressSpace{
 				AddressPrefixes: &[]string{
@@ -74,8 +76,8 @@ func (g *simpleGenerator) vnet() *arm.VirtualNetwork {
 	}
 }
 
-func (g *simpleGenerator) ipAPIServer() *arm.PublicIPAddress {
-	return &arm.PublicIPAddress{
+func (g *simpleGenerator) ipAPIServer() *networkdeployment.PublicIPAddress {
+	return &networkdeployment.PublicIPAddress{
 		Sku: &network.PublicIPAddressSku{
 			Name: network.PublicIPAddressSkuNameStandard,
 		},
@@ -92,8 +94,8 @@ func (g *simpleGenerator) ipAPIServer() *arm.PublicIPAddress {
 	}
 }
 
-func (g *simpleGenerator) ipOutbound() *arm.PublicIPAddress {
-	return &arm.PublicIPAddress{
+func (g *simpleGenerator) ipOutbound() *networkdeployment.PublicIPAddress {
+	return &networkdeployment.PublicIPAddress{
 		Sku: &network.PublicIPAddressSku{
 			Name: network.PublicIPAddressSkuNameStandard,
 		},
@@ -107,8 +109,8 @@ func (g *simpleGenerator) ipOutbound() *arm.PublicIPAddress {
 	}
 }
 
-func (g *simpleGenerator) lbAPIServer() *arm.LoadBalancer {
-	lb := &arm.LoadBalancer{
+func (g *simpleGenerator) lbAPIServer() *networkdeployment.LoadBalancer {
+	lb := &networkdeployment.LoadBalancer{
 		Sku: &network.LoadBalancerSku{
 			Name: network.LoadBalancerSkuNameStandard,
 		},
@@ -195,8 +197,8 @@ func (g *simpleGenerator) lbAPIServer() *arm.LoadBalancer {
 	return lb
 }
 
-func (g *simpleGenerator) lbKubernetes() *arm.LoadBalancer {
-	lb := &arm.LoadBalancer{
+func (g *simpleGenerator) lbKubernetes() *networkdeployment.LoadBalancer {
+	lb := &networkdeployment.LoadBalancer{
 		Sku: &network.LoadBalancerSku{
 			Name: network.LoadBalancerSkuNameStandard,
 		},
@@ -258,8 +260,8 @@ func (g *simpleGenerator) lbKubernetes() *arm.LoadBalancer {
 	return lb
 }
 
-func (g *simpleGenerator) storageAccount(name string, tags map[string]*string) *arm.Account {
-	return &arm.Account{
+func (g *simpleGenerator) storageAccount(name string, tags map[string]*string) *storagedeployment.Account {
+	return &storagedeployment.Account{
 		Sku: &storage.Sku{
 			Name: storage.StandardLRS,
 		},
@@ -274,8 +276,8 @@ func (g *simpleGenerator) storageAccount(name string, tags map[string]*string) *
 	}
 }
 
-func (g *simpleGenerator) nsgMaster() *arm.SecurityGroup {
-	return &arm.SecurityGroup{
+func (g *simpleGenerator) nsgMaster() *networkdeployment.SecurityGroup {
+	return &networkdeployment.SecurityGroup{
 		SecurityGroupPropertiesFormat: &network.SecurityGroupPropertiesFormat{
 			SecurityRules: &[]network.SecurityRule{
 				{
@@ -314,8 +316,8 @@ func (g *simpleGenerator) nsgMaster() *arm.SecurityGroup {
 	}
 }
 
-func (g *simpleGenerator) nsgWorker() *arm.SecurityGroup {
-	return &arm.SecurityGroup{
+func (g *simpleGenerator) nsgWorker() *networkdeployment.SecurityGroup {
+	return &networkdeployment.SecurityGroup{
 		SecurityGroupPropertiesFormat: &network.SecurityGroupPropertiesFormat{
 			SecurityRules: &[]network.SecurityRule{},
 		},
@@ -335,7 +337,7 @@ func (g *simpleGenerator) Vmss(app *api.AgentPoolProfile, backupBlob, suffix str
 	return &rr, err
 }
 
-func vmss(cs *api.OpenShiftManagedCluster, app *api.AgentPoolProfile, backupBlob, suffix string, testConfig api.TestConfig) (*arm.VirtualMachineScaleSet, error) {
+func vmss(cs *api.OpenShiftManagedCluster, app *api.AgentPoolProfile, backupBlob, suffix string, testConfig api.TestConfig) (*computedeployment.VirtualMachineScaleSet, error) {
 	sshPublicKey, err := tls.SSHPublicKeyAsString(&cs.Config.SSHKey.PublicKey)
 	if err != nil {
 		return nil, err
@@ -372,7 +374,7 @@ func vmss(cs *api.OpenShiftManagedCluster, app *api.AgentPoolProfile, backupBlob
 		script = base64.StdEncoding.EncodeToString(b)
 	}
 
-	vmss := &arm.VirtualMachineScaleSet{
+	vmss := &computedeployment.VirtualMachineScaleSet{
 		Sku: &compute.Sku{
 			Name:     to.StringPtr(string(app.VMSize)),
 			Tier:     to.StringPtr("Standard"),

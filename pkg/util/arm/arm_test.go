@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-07-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
+	"github.com/openshift/openshift-azure/pkg/util/azureclient/network/networkdeployment"
 	"github.com/openshift/openshift-azure/pkg/util/jsonpath"
 	"github.com/openshift/openshift-azure/pkg/util/resourceid"
 )
@@ -24,7 +25,7 @@ func TestFixupDepends(t *testing.T) {
 		{
 			name: "have deps, but missing resources",
 			resources: []interface{}{
-				&LoadBalancer{
+				&networkdeployment.LoadBalancer{
 					LoadBalancerPropertiesFormat: &network.LoadBalancerPropertiesFormat{
 						FrontendIPConfigurations: &[]network.FrontendIPConfiguration{
 							{
@@ -50,11 +51,11 @@ func TestFixupDepends(t *testing.T) {
 		{
 			name: "have deps and dependent resources",
 			resources: []interface{}{
-				&PublicIPAddress{
+				&networkdeployment.PublicIPAddress{
 					Name: to.StringPtr("ip-apiserver"),
 					Type: to.StringPtr("Microsoft.Network/publicIPAddresses"),
 				},
-				&LoadBalancer{
+				&networkdeployment.LoadBalancer{
 					LoadBalancerPropertiesFormat: &network.LoadBalancerPropertiesFormat{
 						FrontendIPConfigurations: &[]network.FrontendIPConfiguration{
 							{

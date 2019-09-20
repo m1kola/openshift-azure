@@ -12,6 +12,7 @@ import (
 type Template struct {
 	Schema         string        `json:"$schema,omitempty"`
 	ContentVersion string        `json:"contentVersion,omitempty"`
+	APIProfile     string        `json:"apiProfile,omitempty"`
 	Parameters     struct{}      `json:"parameters,omitempty"`
 	Variables      struct{}      `json:"variables,omitempty"`
 	Resources      []interface{} `json:"resources,omitempty"`
